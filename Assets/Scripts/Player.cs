@@ -7,12 +7,12 @@ public class Player : MonoBehaviour
     private float _jumpEndTime;
     [SerializeField] private float _jumpVelocity = 5;
     [SerializeField] private float _jumpDuration = 0.5f;
+    public bool IsGrounded;
 
     void OnDrawGizmos()
     {
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        float bottomY = spriteRenderer.bounds.extents.y;
-        Vector2 origin = new Vector2(transform.position.x, transform.position.y - bottomY);
+        Vector2 origin = new Vector2(transform.position.x, transform.position.y - spriteRenderer.bounds.extents.y);
         Gizmos.color = Color.red;
         Gizmos.DrawLine(origin, origin + Vector2.down * 0.1f);
     }
@@ -20,12 +20,26 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        Vector2 origin = new Vector2(transform.position.x, transform.position.y - spriteRenderer.bounds.extents.y);
+
+        var hit = Physics2D.Raycast(origin, Vector2.down, 0.1f);
+
+        if(hit.collider)
+        {
+            IsGrounded = true;
+        }
+        else
+        {
+            IsGrounded = false;
+        }
+
         var horizontal = Input.GetAxis("Horizontal");
         Debug.Log(horizontal);
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         var vertical = rb.velocity.y;
 
-        if(Input.GetButtonDown("Fire1"))
+        if(Input.GetButtonDown("Fire1") && IsGrounded)
         {
             _jumpEndTime = Time.time + _jumpDuration;
         }
