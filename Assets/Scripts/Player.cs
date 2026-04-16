@@ -39,12 +39,12 @@ public class Player : MonoBehaviour
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         var vertical = rb.velocity.y;
 
-        if(Input.GetButtonDown("Fire1") && IsGrounded)
+        if(Input.GetButtonDown("Jump") && IsGrounded)
         {
             _jumpEndTime = Time.time + _jumpDuration;
         }
 
-        if (Input.GetButton("Fire1") && _jumpEndTime > Time.time)
+        if (Input.GetButton("Jump") && _jumpEndTime > Time.time)
         {
             vertical = _jumpVelocity;
         }
