@@ -4,12 +4,12 @@
 [Bb]uild/
 [Bb]uilds/
 [Ll]ogs/
-UserSettings/
+[Uu]ser[Ss]ettings/
+.vs/
 
 MemoryCaptures/
 Recordings/
 
-.vs/
 .idea/
 *.csproj
 *.unityproj
