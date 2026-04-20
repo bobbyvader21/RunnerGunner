@@ -354,8 +354,9 @@ GameObject:
   - component: {fileID: 875768925}
   - component: {fileID: 875768926}
   - component: {fileID: 875768927}
+  - component: {fileID: 875768928}
   m_Layer: 0
-  m_Name: alienBlue_front
+  m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -578,7 +579,29 @@ MonoBehaviour:
   _horizontalVelocity: 3
   _jumpVelocity: 6
   _jumpDuration: 0.5
+  _jumpSprite: {fileID: 21300000, guid: 9869be2f2cdc5a544b38211674b911e3, type: 3}
   IsGrounded: 0
+--- !u!95 &875768928
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 875768922}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 4a2b6b94a74a48b4bb0454da473706ae, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1267160769
 GameObject:
   m_ObjectHideFlags: 0
