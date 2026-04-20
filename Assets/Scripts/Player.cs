@@ -11,9 +11,10 @@ public class Player : MonoBehaviour
     [SerializeField] float _jumpDuration = 0.5f;
     [SerializeField] Sprite _jumpSprite;
     [SerializeField] LayerMask _layerMask;
+    [SerializeField] float _footOffset = 0.5f;
+
     public bool IsGrounded;
     SpriteRenderer _spriteRenderer;
-    Sprite _defaultSprite;
     float _horizontal;
     Animator _animator;
 
@@ -21,14 +22,22 @@ public class Player : MonoBehaviour
     {
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
-        _defaultSprite = _spriteRenderer.sprite;
     }
 
     void OnDrawGizmos()
     {
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        Vector2 origin = new Vector2(transform.position.x, transform.position.y - spriteRenderer.bounds.extents.y);
         Gizmos.color = Color.red;
+
+        Vector2 origin = new Vector2(transform.position.x, transform.position.y - spriteRenderer.bounds.extents.y);
+        Gizmos.DrawLine(origin, origin + Vector2.down * 0.1f);
+
+        // Draw left foot
+        origin = new Vector2(transform.position.x - _footOffset, transform.position.y - spriteRenderer.bounds.extents.y);
+        Gizmos.DrawLine(origin, origin + Vector2.down * 0.1f);
+
+        // Draw right foot
+        origin = new Vector2(transform.position.x + _footOffset, transform.position.y - spriteRenderer.bounds.extents.y);
         Gizmos.DrawLine(origin, origin + Vector2.down * 0.1f);
     }
 
@@ -38,21 +47,7 @@ public class Player : MonoBehaviour
         // Get the SpriteRenderer to access the player's size
         // SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
 
-        // Create a point at the bottom of the player (feet)
-        // transform.position is center, so subtract half the height
-        Vector2 origin = new Vector2(
-            transform.position.x,
-            transform.position.y - _spriteRenderer.bounds.extents.y
-        );
-
-        // Cast a short ray downward to check if ground is directly below
-        var hit = Physics2D.Raycast(origin, Vector2.down, 0.1f, _layerMask);
-
-        // If the ray hits something, the player is grounded
-        if (hit.collider)
-            IsGrounded = true;
-        else
-            IsGrounded = false;
+        UpdateGrounding();
 
         // Get horizontal input (-1 = left, 0 = idle, 1 = right)
         _horizontal = Input.GetAxis("Horizontal");
@@ -88,7 +83,37 @@ public class Player : MonoBehaviour
         UpdateSprite();
     }
 
-    private void UpdateSprite()
+    void UpdateGrounding()
+    {
+        IsGrounded = false;
+        // Create a point at the bottom of the player (feet)
+        // transform.position is center, so subtract half the height
+        Vector2 origin = new Vector2(
+            transform.position.x,
+            transform.position.y - _spriteRenderer.bounds.extents.y
+        );
+
+        // Cast a short ray downward to check if ground is directly below
+        var hit = Physics2D.Raycast(origin, Vector2.down, 0.1f, _layerMask);
+
+        // If the ray hits something, the player is grounded
+        if (hit.collider)
+            IsGrounded = true;
+
+        // Check Left
+        origin = new Vector2(transform.position.x - _footOffset, transform.position.y - _spriteRenderer.bounds.extents.y);
+        hit = Physics2D.Raycast(origin, Vector2.down, 0.1f, _layerMask);
+        if (hit.collider)
+            IsGrounded = true;
+
+        // Check Right
+        origin = new Vector2(transform.position.x + _footOffset, transform.position.y - _spriteRenderer.bounds.extents.y);
+        hit = Physics2D.Raycast(origin, Vector2.down, 0.1f, _layerMask);
+        if (hit.collider)
+            IsGrounded = true;
+    }
+
+    void UpdateSprite()
     {
         _animator.SetBool("IsGrounded", IsGrounded);
 
