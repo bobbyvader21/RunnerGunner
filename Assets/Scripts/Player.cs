@@ -73,6 +73,11 @@ public class Player : MonoBehaviour
 
             _jumpsRemaining--;
 
+            if (_jumpsRemaining > 0)
+                _audioSource.pitch = 1;
+            else
+                _audioSource.pitch = 1.2f;
+            
             _audioSource.Play();
         }
 
