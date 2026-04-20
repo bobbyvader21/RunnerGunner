@@ -10,13 +10,16 @@ public class Player : MonoBehaviour
     [SerializeField] float _jumpVelocity = 5;
     [SerializeField] float _jumpDuration = 0.5f;
     [SerializeField] Sprite _jumpSprite;
+    [SerializeField] LayerMask _layerMask;
     public bool IsGrounded;
     SpriteRenderer _spriteRenderer;
     Sprite _defaultSprite;
     float _horizontal;
+    Animator _animator;
 
     private void Awake()
     {
+        _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _defaultSprite = _spriteRenderer.sprite;
     }
@@ -43,7 +46,7 @@ public class Player : MonoBehaviour
         );
 
         // Cast a short ray downward to check if ground is directly below
-        var hit = Physics2D.Raycast(origin, Vector2.down, 0.1f);
+        var hit = Physics2D.Raycast(origin, Vector2.down, 0.1f, _layerMask);
 
         // If the ray hits something, the player is grounded
         if (hit.collider)
@@ -87,9 +90,9 @@ public class Player : MonoBehaviour
 
     private void UpdateSprite()
     {
-        GetComponent<Animator>().SetBool("IsGrounded", IsGrounded);
+        _animator.SetBool("IsGrounded", IsGrounded);
 
-        GetComponent<Animator>().SetFloat("HorizontalSpeed", Math.Abs(_horizontal));
+        _animator.SetFloat("HorizontalSpeed", Math.Abs(_horizontal));
 
         // Flips jump sprite depending on key press
         if (_horizontal > 0)
