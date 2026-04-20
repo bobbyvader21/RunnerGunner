@@ -87,11 +87,9 @@ public class Player : MonoBehaviour
 
     private void UpdateSprite()
     {
-        if (IsGrounded)
-            _spriteRenderer.sprite = _defaultSprite;
-        else
-            // Make jump sprite for character
-            _spriteRenderer.sprite = _jumpSprite;
+        GetComponent<Animator>().SetBool("IsGrounded", IsGrounded);
+
+        GetComponent<Animator>().SetFloat("HorizontalSpeed", Math.Abs(_horizontal));
 
         // Flips jump sprite depending on key press
         if (_horizontal > 0)
