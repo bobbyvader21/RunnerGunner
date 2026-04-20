@@ -17,6 +17,7 @@ public class Player : MonoBehaviour
     SpriteRenderer _spriteRenderer;
     float _horizontal;
     Animator _animator;
+    int _jumpsRemaining;
 
     private void Awake()
     {
@@ -62,10 +63,12 @@ public class Player : MonoBehaviour
         var vertical = rb.velocity.y;
 
         // If jump button is pressed AND player is on the ground
-        if (Input.GetButtonDown("Jump") && IsGrounded)
+        if (Input.GetButtonDown("Jump") && _jumpsRemaining > 0)
         {
             // Set how long the jump can continue (for variable height)
             _jumpEndTime = Time.time + _jumpDuration;
+
+            _jumpsRemaining--;
         }
 
         // If jump button is being held AND within allowed jump time
@@ -111,6 +114,9 @@ public class Player : MonoBehaviour
         hit = Physics2D.Raycast(origin, Vector2.down, 0.1f, _layerMask);
         if (hit.collider)
             IsGrounded = true;
+
+        if (IsGrounded && GetComponent<Rigidbody2D>().velocity.y <= 0)
+            _jumpsRemaining = 2;
     }
 
     void UpdateSprite()
