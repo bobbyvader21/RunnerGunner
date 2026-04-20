@@ -4,11 +4,20 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    private float _jumpEndTime;
-    [SerializeField] private float _horizontalVelocity = 3;
-    [SerializeField] private float _jumpVelocity = 5;
-    [SerializeField] private float _jumpDuration = 0.5f;
+    float _jumpEndTime;
+    [SerializeField] float _horizontalVelocity = 3;
+    [SerializeField] float _jumpVelocity = 5;
+    [SerializeField] float _jumpDuration = 0.5f;
+    [SerializeField] Sprite _jumpSprite;
     public bool IsGrounded;
+    SpriteRenderer _spriteRenderer;
+    Sprite _defaultSprite;
+
+    private void Awake()
+    {
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+        _defaultSprite = _spriteRenderer.sprite;
+    }
 
     void OnDrawGizmos()
     {
@@ -22,13 +31,13 @@ public class Player : MonoBehaviour
     void Update()
     {
         // Get the SpriteRenderer to access the player's size
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        // SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
 
         // Create a point at the bottom of the player (feet)
         // transform.position is center, so subtract half the height
         Vector2 origin = new Vector2(
             transform.position.x,
-            transform.position.y - spriteRenderer.bounds.extents.y
+            transform.position.y - _spriteRenderer.bounds.extents.y
         );
 
         // Cast a short ray downward to check if ground is directly below
@@ -38,10 +47,14 @@ public class Player : MonoBehaviour
         if (hit.collider)
         {
             IsGrounded = true;
+            _spriteRenderer.sprite = _defaultSprite;
         }
         else
         {
             IsGrounded = false;
+
+            // Make jump sprite for character
+            _spriteRenderer.sprite = _jumpSprite;
         }
 
         // Get horizontal input (-1 = left, 0 = idle, 1 = right)
