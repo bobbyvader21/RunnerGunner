@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,6 +13,7 @@ public class Player : MonoBehaviour
     public bool IsGrounded;
     SpriteRenderer _spriteRenderer;
     Sprite _defaultSprite;
+    float _horizontal;
 
     private void Awake()
     {
@@ -45,23 +47,15 @@ public class Player : MonoBehaviour
 
         // If the ray hits something, the player is grounded
         if (hit.collider)
-        {
             IsGrounded = true;
-            _spriteRenderer.sprite = _defaultSprite;
-        }
         else
-        {
             IsGrounded = false;
 
-            // Make jump sprite for character
-            _spriteRenderer.sprite = _jumpSprite;
-        }
-
         // Get horizontal input (-1 = left, 0 = idle, 1 = right)
-        var horizontal = Input.GetAxis("Horizontal");
+        _horizontal = Input.GetAxis("Horizontal");
 
         // Print input value to console (for debugging)
-        Debug.Log(horizontal);
+        Debug.Log(_horizontal);
 
         // Get Rigidbody2D component (controls physics movement)
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
@@ -85,7 +79,24 @@ public class Player : MonoBehaviour
 
         // Apply final movement:
         // horizontal input for x, calculated vertical for y
-        horizontal *= _horizontalVelocity;
-        rb.velocity = new Vector2(horizontal, vertical);
+        _horizontal *= _horizontalVelocity;
+        rb.velocity = new Vector2(_horizontal, vertical);
+
+        UpdateSprite();
+    }
+
+    private void UpdateSprite()
+    {
+        if (IsGrounded)
+            _spriteRenderer.sprite = _defaultSprite;
+        else
+            // Make jump sprite for character
+            _spriteRenderer.sprite = _jumpSprite;
+
+        // Flips jump sprite depending on key press
+        if (_horizontal > 0)
+            _spriteRenderer.flipX = false;
+        else if (_horizontal < 0)
+            _spriteRenderer.flipX = true;
     }
 }
