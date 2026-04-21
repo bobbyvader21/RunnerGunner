@@ -5,24 +5,44 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    // Tracks when the jump should stop (for variable jump height)
     float _jumpEndTime;
+
+    // Movement speed (left/right)
     [SerializeField] float _horizontalVelocity = 3;
+
+    // Jump strength (upward velocity)
     [SerializeField] float _jumpVelocity = 5;
+
+    // How long the jump lasts when holding the button
     [SerializeField] float _jumpDuration = 0.5f;
+
+    // Sprite used when jumping (not currently applied here, but available)
     [SerializeField] Sprite _jumpSprite;
+
+    // Layer mask to detect ONLY ground (important for raycasts)
     [SerializeField] LayerMask _layerMask;
+
+    // Offset for left/right foot ground detection
     [SerializeField] float _footOffset = 0.5f;
 
+    // Public variable to track if player is on the ground
     public bool IsGrounded;
 
+    // Cached components (for performance)
     SpriteRenderer _spriteRenderer;
     AudioSource _audioSource;
-    float _horizontal;
     Animator _animator;
+
+    // Stores horizontal input value
+    float _horizontal;
+
+    // Tracks how many jumps remain (for double jump)
     int _jumpsRemaining;
 
     private void Awake()
     {
+        // Cache components ONCE (better than calling every frame)
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _audioSource = GetComponent<AudioSource>();
@@ -30,112 +50,137 @@ public class Player : MonoBehaviour
 
     void OnDrawGizmos()
     {
+        // Draw debug lines in Scene view to visualize raycasts
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         Gizmos.color = Color.red;
 
-        Vector2 origin = new Vector2(transform.position.x, transform.position.y - spriteRenderer.bounds.extents.y);
+        // Center ray (middle foot)
+        Vector2 origin = new Vector2(
+            transform.position.x,
+            transform.position.y - spriteRenderer.bounds.extents.y
+        );
         Gizmos.DrawLine(origin, origin + Vector2.down * 0.1f);
 
-        // Draw left foot
-        origin = new Vector2(transform.position.x - _footOffset, transform.position.y - spriteRenderer.bounds.extents.y);
+        // Left foot ray
+        origin = new Vector2(
+            transform.position.x - _footOffset,
+            transform.position.y - spriteRenderer.bounds.extents.y
+        );
         Gizmos.DrawLine(origin, origin + Vector2.down * 0.1f);
 
-        // Draw right foot
-        origin = new Vector2(transform.position.x + _footOffset, transform.position.y - spriteRenderer.bounds.extents.y);
+        // Right foot ray
+        origin = new Vector2(
+            transform.position.x + _footOffset,
+            transform.position.y - spriteRenderer.bounds.extents.y
+        );
         Gizmos.DrawLine(origin, origin + Vector2.down * 0.1f);
     }
 
-    // Update is called once per frame
+    // Called once per frame
     void Update()
     {
-        // Get the SpriteRenderer to access the player's size
-        // SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-
+        // Check if player is grounded using raycasts
         UpdateGrounding();
 
-        // Get horizontal input (-1 = left, 0 = idle, 1 = right)
+        // Get horizontal input (-1 left, 1 right)
         _horizontal = Input.GetAxis("Horizontal");
 
-        // Print input value to console (for debugging)
+        // Debug input value
         Debug.Log(_horizontal);
 
-        // Get Rigidbody2D component (controls physics movement)
+        // Get Rigidbody2D for movement
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
 
-        // Store current vertical velocity (so gravity still applies)
+        // Keep current vertical velocity (so gravity still applies)
         var vertical = rb.velocity.y;
 
-        // If jump button is pressed AND player is on the ground
+        // If jump is pressed AND player still has jumps remaining
         if (Input.GetButtonDown("Jump") && _jumpsRemaining > 0)
         {
-            // Set how long the jump can continue (for variable height)
+            // Set jump timer for variable height
             _jumpEndTime = Time.time + _jumpDuration;
 
+            // Reduce remaining jumps (for double jump system)
             _jumpsRemaining--;
 
+            // Change pitch depending on jump number
             if (_jumpsRemaining > 0)
-                _audioSource.pitch = 1;
+                _audioSource.pitch = 1;       // normal jump
             else
-                _audioSource.pitch = 1.2f;
-            
+                _audioSource.pitch = 1.2f;   // second jump
+
+            // Play jump sound
             _audioSource.Play();
         }
 
-        // If jump button is being held AND within allowed jump time
+        // If jump button is held AND within allowed jump time
         if (Input.GetButton("Jump") && _jumpEndTime > Time.time)
         {
-            // Apply upward velocity (jumping)
+            // Apply upward velocity (keeps player rising)
             vertical = _jumpVelocity;
         }
 
-        // Apply final movement:
-        // horizontal input for x, calculated vertical for y
+        // Apply horizontal movement speed
         _horizontal *= _horizontalVelocity;
+
+        // Apply final velocity to Rigidbody
         rb.velocity = new Vector2(_horizontal, vertical);
 
+        // Update animations and sprite direction
         UpdateSprite();
     }
 
     void UpdateGrounding()
     {
+        // Assume player is NOT grounded initially
         IsGrounded = false;
-        // Create a point at the bottom of the player (feet)
-        // transform.position is center, so subtract half the height
+
+        // Get bottom-center of player (feet position)
         Vector2 origin = new Vector2(
             transform.position.x,
             transform.position.y - _spriteRenderer.bounds.extents.y
         );
 
-        // Cast a short ray downward to check if ground is directly below
+        // Cast ray downward (center)
         var hit = Physics2D.Raycast(origin, Vector2.down, 0.1f, _layerMask);
 
-        // If the ray hits something, the player is grounded
         if (hit.collider)
             IsGrounded = true;
 
-        // Check Left
-        origin = new Vector2(transform.position.x - _footOffset, transform.position.y - _spriteRenderer.bounds.extents.y);
+        // Check left foot
+        origin = new Vector2(
+            transform.position.x - _footOffset,
+            transform.position.y - _spriteRenderer.bounds.extents.y
+        );
         hit = Physics2D.Raycast(origin, Vector2.down, 0.1f, _layerMask);
+
         if (hit.collider)
             IsGrounded = true;
 
-        // Check Right
-        origin = new Vector2(transform.position.x + _footOffset, transform.position.y - _spriteRenderer.bounds.extents.y);
+        // Check right foot
+        origin = new Vector2(
+            transform.position.x + _footOffset,
+            transform.position.y - _spriteRenderer.bounds.extents.y
+        );
         hit = Physics2D.Raycast(origin, Vector2.down, 0.1f, _layerMask);
+
         if (hit.collider)
             IsGrounded = true;
 
+        // If grounded AND not moving upward, reset jumps (double jump reset)
         if (IsGrounded && GetComponent<Rigidbody2D>().velocity.y <= 0)
             _jumpsRemaining = 2;
     }
 
     void UpdateSprite()
     {
+        // Tell animator whether player is grounded
         _animator.SetBool("IsGrounded", IsGrounded);
 
+        // Send horizontal speed (absolute value for animation blending)
         _animator.SetFloat("HorizontalSpeed", Math.Abs(_horizontal));
 
-        // Flips jump sprite depending on key press
+        // Flip sprite depending on movement direction
         if (_horizontal > 0)
             _spriteRenderer.flipX = false;
         else if (_horizontal < 0)
